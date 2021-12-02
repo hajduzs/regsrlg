@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<all>
+	<generation>byhand</generation>
+	<num_srlg>11</num_srlg>
+	<srlg_edge_counts>
+		<item>3</item>
+		<item>3</item>
+		<item>3</item>
+		<item>3</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>3</item>
+	</srlg_edge_counts>
+	<srlg_diameters_n>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>3</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>3</item>
+	</srlg_diameters_n>
+	<fromfile>janos.lgf.srlg</fromfile>
+	<runs/>
+</all>

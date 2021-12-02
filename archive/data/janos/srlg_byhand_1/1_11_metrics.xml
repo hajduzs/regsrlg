@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<all>
+	<s>1</s>
+	<t>11</t>
+	<time_core>0.02826690673828125</time_core>
+	<time_heur_node>0.004440784454345703</time_heur_node>
+	<time_heur_dist>0.004843711853027344</time_heur_dist>
+	<pathlen_bh_avg_node>5.5</pathlen_bh_avg_node>
+	<pathlen_bh_avg_dist>7.379559585073311</pathlen_bh_avg_dist>
+	<pathlen_ah_node_avg_node>5.0</pathlen_ah_node_avg_node>
+	<pathlen_ah_node_min_node>4</pathlen_ah_node_min_node>
+	<pathlen_ah_node_max_node>6</pathlen_ah_node_max_node>
+	<pathlen_ah_node_avg_dist>6.790486792636658</pathlen_ah_node_avg_dist>
+	<pathlen_ah_node_min_dist>5.06449510224598</pathlen_ah_node_min_dist>
+	<pathlen_ah_node_max_dist>10.07768723046357</pathlen_ah_node_max_dist>
+	<pathlen_ah_dist_avg_node>5.0</pathlen_ah_dist_avg_node>
+	<pathlen_ah_dist_min_node>4</pathlen_ah_dist_min_node>
+	<pathlen_ah_dist_max_node>6</pathlen_ah_dist_max_node>
+	<pathlen_ah_dist_avg_dist>6.790486792636658</pathlen_ah_dist_avg_dist>
+	<pathlen_ah_dist_min_dist>5.06449510224598</pathlen_ah_dist_min_dist>
+	<pathlen_ah_dist_max_dist>10.07768723046357</pathlen_ah_dist_max_dist>
+	<s_t_connectivity>4</s_t_connectivity>
+	<k>4</k>
+	<shortest_path_len_node>4</shortest_path_len_node>
+	<shortest_path_len_dist>5.06449510224598</shortest_path_len_dist>
+	<srlg_intersections>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+		<item>2</item>
+	</srlg_intersections>
+	<two_shorterst_srlg_node>8</two_shorterst_srlg_node>
+	<two_shorterst_srlg_dist>10.67004637770997</two_shorterst_srlg_dist>
+	<two_shortest_flow_dist>1.0670046377709969e-05</two_shortest_flow_dist>
+	<two_shortest_flow_node>9</two_shortest_flow_node>
+</all>

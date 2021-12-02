@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<all>
+	<generation>byhand</generation>
+	<num_slrg>2</num_slrg>
+	<slrg_edge_counts>
+		<item>2</item>
+		<item>2</item>
+	</slrg_edge_counts>
+	<slrg_diameters_n>
+		<item>2</item>
+		<item>0</item>
+	</slrg_diameters_n>
+	<fromfile>dummy.lgf.slrg</fromfile>
+	<runs/>
+</all>

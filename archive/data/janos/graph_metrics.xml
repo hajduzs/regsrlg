@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<all>
+	<V>23</V>
+	<E>52</E>
+	<diameter_g>8.0</diameter_g>
+	<diameter_n>4</diameter_n>
+	<connectivity>2</connectivity>
+	<total_edge_len>81.65074825931698</total_edge_len>
+	<fromfile>janos.lgf</fromfile>
+	<srlgs/>
+</all>

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<all>
+	<gen>unknown</gen>
+	<ns>2</ns>
+	<sec>
+		<item>2</item>
+		<item>2</item>
+	</sec>
+	<sdn>
+		<item>2</item>
+		<item>1</item>
+	</sdn>
+	<fromfile>dummy.lgf.srlg</fromfile>
+	<generation>byhand</generation>
+	<runs/>
+</all>

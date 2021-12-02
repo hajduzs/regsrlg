@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<all>
+	<file>janos.lgf.slrg</file>
+	<slrg>
+		<generation>byhand</generation>
+		<num_slrg>13</num_slrg>
+		<slrg_edge_counts>
+			<item>3</item>
+			<item>3</item>
+			<item>3</item>
+			<item>3</item>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>3</item>
+			<item>3</item>
+			<item>2</item>
+		</slrg_edge_counts>
+		<slrg_diameters_n>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>3</item>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>2</item>
+			<item>3</item>
+			<item>3</item>
+			<item>2</item>
+		</slrg_diameters_n>
+	</slrg>
+	<runs/>
+</all>

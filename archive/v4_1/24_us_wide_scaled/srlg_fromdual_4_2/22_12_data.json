@@ -1,0 +1,1 @@
+{"shortest_path": [22, 21, 20, 13, 14, 12], "res": {"1": [[22, 21, 20, 13, 14, 12]]}, "path_before_heur": [[22, 21, 20, 13, 14, 12]], "path_after_heur_node": [[22, 21, 20, 13, 14, 12]], "path_after_heur_dist": []}
