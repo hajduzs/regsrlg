@@ -30,11 +30,15 @@ Arguments are the following:
 
 ## Code and repository structure
 
-- `/data` - Input files (graph and srlg-list)
+- `/archive` - Input/Output files (graph and srlg-list)
 
-- `/out` - Output files (solution, other)
+- `/debug` - IO files used for debugging
+
+- `/scripts` - Axuilary, helper code snippets 
 
 - `/src` - Code 
+
+  - `/generation` - Folder containing modules with code used for dynamic SRLG generation
 
   - `/geometry`
 
@@ -51,8 +55,12 @@ Arguments are the following:
     - `HelperFunctions.py` - Functions to generate structures and calulate paths for a faster computation
 
     - `JsonGraphGenerator.py` - Class for converting every graph to json, providing and interface between various input formats and the program itself
+    
+    - `Metrics.py` - Code related to simulation and metric logging
   
   - `PlanarGraph.py` - Class representing the graph, handling our custom DFS, as well as some other things.
+
+  - `DualGraph.py` - Class representing the dual Graph.
 
   - `SlrgDisjointSolver.py` - Class handling the main algorithm.
 
@@ -60,6 +68,9 @@ Arguments are the following:
 
 - `routesrlg.py` - Entry script for a single network-srlg-s-t combination run
 
+- `parallelrun.py` - Entry script for the parallelized and batched simulation
+
+- `paralleldefs.py` - Axuilary to the later file.
 
 ## Metrics:
 
