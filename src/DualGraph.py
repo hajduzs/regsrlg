@@ -130,13 +130,3 @@ class DualGraph():
                 ))
 
         return newsets
-
-
-        
-
-
-
-
-            
-
-

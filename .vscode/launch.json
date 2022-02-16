@@ -1,0 +1,24 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "debug",
+            "type": "python",
+            "request": "launch",
+            "program": "routeslrg.py",
+            "args": ["debug/janos/janos.lgf", "debug/janos/srlg_byhand_1/janos.lgf.srlg", "0", "1", "-d"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "debugUI",
+            "type": "python",
+            "request": "launch",
+            "program": "routeslrg.py",
+            "args": ["debug/janos/janos.lgf", "debug/janos/srlg_byhand_1/janos.lgf.srlg", "0", "1", "-d", "-u"],
+            "console": "integratedTerminal"
+        }
+    ]
+} 

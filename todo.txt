@@ -1,0 +1,17 @@
+TODO 
+
+-- Refactor / Restructure 
+
++ preprocessing
+    + cutting SRLG-s into a sep. file for each list
+    + dual graph into a sep. file (calc. of dual into a sep module)
+
++ logging 
+    + metrics in a better way
+    + better separated debugging / info code segments 
+
++ tasks
+    + implement min-cut algorithm 
+    + deal with primal-dual connected srlgs 
+    + check if the solution still works with the ommitance of the "right-of" path constraint 
+        ~(it may be implemented in this way already)

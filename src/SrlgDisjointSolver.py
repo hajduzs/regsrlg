@@ -238,9 +238,10 @@ class SrlgDisjointSolver:
             # If new path is srlg- and point-disjoint with the oldest path we are done with the k-th iteration!
             if self.PG.srlg_disjoint(self.oldestpath, self.novelpath, shrunksrlgs):
                 paths_ok = True
+                break
             else:
                 paths_ok = False
-                break
+                
                 
             i = i * 2
 
