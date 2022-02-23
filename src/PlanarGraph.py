@@ -194,7 +194,7 @@ class PlanarGraph:
             List[int]: The closest possible path in clockwise-orientation found to the given path.
         """ 
 
-        if srlgs_set is not None:
+        if srlgs_set is None:
             SS = self.S
         else:
             SS = srlgs_set

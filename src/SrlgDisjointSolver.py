@@ -1,3 +1,5 @@
+import math
+from typing import FrozenSet
 from networkx.convert import to_dict_of_dicts
 from src.DualGraph import DualGraph
 from src.PlanarGraph import PlanarGraph
@@ -46,7 +48,7 @@ class SrlgDisjointSolver:
         self.maxpaths_ah_dist = []                      # Paths found for k=max after shortening heuristic, minimising geometric distance
 
         # Metrics from the run 
-        self.firstpath = []                             # Shortest path found for k=1, saved for convinience                                                
+        self.shortestpath = []                             # Shortest path found for k=1, saved for convinience                                                
         self.time_core = 0                              # Time needed for the core algoritms to run
         self.time_heur_node = 0                         # Time needed for the shortening heuristic (minimising node count) to run.
         self.time_heur_dist = 0                         # Time needed for the shortening heuristic (minimising geom. dist) to run.
@@ -66,7 +68,7 @@ class SrlgDisjointSolver:
 
     def get_data(self):
         return {
-            'shortest_path': self.firstpath,
+            'shortest_path': self.shortestpath,
             'res': self.results,
             'path_before_heur': self.maxpaths_bh,
             'path_after_heur_node': self.maxpaths_ah_node,
@@ -214,23 +216,32 @@ class SrlgDisjointSolver:
             path.append(self.t)
 
             flow_based_paths.append(path)
+
+        if len(flow_based_paths) < 2: 
+            raise Exception("could not find at least 2 V-disjoint paths")
+
         P = flow_based_paths[0]
 
         # 2. step: iterating to max diam/2, while multiplying i (in Si) by 2 
-        md = max(self.get_srlg_metrics()['sdn']) # get max diameter
+        d = max(self.get_srlg_metrics()['sdn']) # get max diameter
+        i, maxiter = 1, math.ceil(math.log2(d))
+        
         good_path_found = False
         newk = True
-        i = 1
-        while i <= (md + 1) // 2 + 1:
-            
+
+        while i <= maxiter:
+
             # Calculate new set of SLRG-s 
             
-            i_srlg = [self.DG.get_shrunk_slrgs(srlg, i) for srlg in self.jss]
+            i_srlg = [self.DG.get_shrunk_slrgs(srlg, 2**(i-1)) for srlg in self.jss]     
+            i_srlg = list(filter(lambda x: x != [], i_srlg))
+
+            # Load new SRLG set into the Algorithm 1 solver
             shrunksrlgs = self.PG._init_srlg_list(self.jsg, i_srlg)
             # Try to caluculate new path based on the main algorithm using the new set of srlgs
 
             self.oldestpath = P                               
-            self.newestpath = flow_based_paths[1]                               # Get the newest path from the solution path queue
+            self.newestpath = P                            # Get the newest path from the solution path queue
             self.novelpath = self.PG.caluclate_next_cw_path(self.newestpath, shrunksrlgs, newk=newk)    # Calculate novel (k+1 th), closest CW path to the newest
 
             self.wait_for_signal()
@@ -238,12 +249,12 @@ class SrlgDisjointSolver:
             # If new path is srlg- and point-disjoint with the oldest path we are done with the k-th iteration!
             if self.PG.srlg_disjoint(self.oldestpath, self.novelpath, shrunksrlgs):
                 paths_ok = True
-                break
             else:
                 paths_ok = False
+            
                 
                 
-            i = i * 2
+            i += 1
 
         if paths_ok:
             self.k += 1 
@@ -256,104 +267,6 @@ class SrlgDisjointSolver:
             self.wait_for_signal(iterfinish=True)
 
             
-
-    def _find_first_two_paths(self):
-        """Function handling the special case for k = 2
-        """        
-
-        # Define variables so the tryedge recursive function can be defined easily inside here.
-        processed = set()           # processed edges
-        srlg_right_uv = set()       # SLRG edges that can be reached by 'going right' from the first path.
-
-        def tryedge(f: Edge):
-            """ A recursive function packing srlg_right_uv with the edges reached from a given edge.
-
-            Args:
-                f (Edge): The edge that we want to examine the right side of.
-            """            
-            processed.add(f)   
-            f1, f2 = f.unpack()                                 
-            
-            right_region = self.PG.right_region(f1, f2)                 # Get right region of f
-
-            srlg_right_uv.update(right_region.intersection(srlg))       # srlg_right_uv := srlg_right_uv U (right_region ∩ srlg) 
-                                                                        # Add the edges of the examined srlg from the region to the set of found srlg edges.
-
-            yet_to_try = srlg_right_uv.difference(processed)        
-            yet_to_try = yet_to_try.difference(edgepath)                # yet_to_try := srlg_right_uv / processed / path
-
-            if yet_to_try:                                              # If there are new SLRG-edges not yet prcessed..
-                for e in right_region:                                  # MAGIC* here -> explanation comment block a few lines below
-                    if e in yet_to_try:                                 
-                        u1, u2 = e.unpack()                           
-                        #log.debug(f'Continuing tryedge with {e}')
-                        tryedge(Edge(u2, u1))                           # ..try these edges as well with swapped direction.
-
-            # MAGIC* explanation:           TODO fix this 
-            # -------------------
-            # right_region contains the edges in the correct direction, 
-            # but the other sets are not guaranteed to have this nice (and very much needed) property. 
-            # after we have calculated the edges to be tried, we can guarantee the correct orientation 
-            # by "making rigth_region the primary set in the loop" and "intersecting" in O(n) manually, meaning
-            # the edges (which are oriented correctly) in right_region will be used. 
-
-        # Iterate until the second path we have found is SLRG disjoint from the first 
-        # (there MUST be two such paths, otherwise _path_does_not_cut would have returned False in the solve() function).
-        
-        for i in range(self.max_iter):
-
-            self.iternum += 1
-
-            self.oldestpath = self.pathqueue[0]
-            
-            edges_to_remove = set()     # Set to put the reached SLRG edges in.
-
-            # for every edge e:(u,v) of the first path
-            edgepath = path_to_edgelist(self.oldestpath)
-            for e in edgepath:
-                # for every SLRG that e:(u,v) is a part of
-                for srlg in self._get_srlgs_containing_edge(e[0], e[1]):
-                    processed = set()
-                    srlg_right_uv = {e}
-                    tryedge(e)
-                    srlg_right_uv = srlg_right_uv.difference(edgepath)      # Remove SLRG-s which are on the path.
-                    edges_to_remove = edges_to_remove.union(srlg_right_uv)  # Add found srlg edges to e_t_r
-
-            # Make Copy Graph and remove critical edges. 
-            G2 = self.PG.G.copy()
-            for e in edges_to_remove: 
-                a, b = e.unpack()
-                G2.remove_edge(a, b)
-
-            # Refresh circulators in copy graph for a quick clockwise DFS.
-            for n in G2.nodes():   
-                G2.nodes[n]['circulator'] = Circulator(G2.nodes[n]['coords'],[(ne, G2.nodes[ne]['coords']) for ne in G2.neighbors(n)])
-
-            # Get next best path 
-            self.novelpath = clockwise_dfs(G2, self.s, self.t, self.oldestpath)
-
-            if self.novelpath == []:
-                raise Exception('New path can not be an empty path!')
-
-            self.wait_for_signal()
-
-            # If the two paths are disjoint, good! 
-            if self.PG.srlg_disjoint(self.oldestpath, self.novelpath): # and self.PG.point_disjoint(self.oldestpath, self.novelpath):
-                self.pathqueue.append(self.novelpath)
-                self.fallbackqueue = []
-                self.iternum = 0
-                break
-
-            # if the fallbackqueue is the same as the pathqueue it means we have come "full cycle" and no further improvements are possible
-            if len(self.fallbackqueue) != 0 and self.fallbackqueue[0] == self.novelpath:
-                log.debug('Stopping because no further imporvements are possible')
-                break
-            
-            self.add_to_fallback(deepcopy(self.pathqueue[0]))
-            del self.pathqueue[0]
-            self.pathqueue.append(self.novelpath)
-
-
     def shortening_heurisctic(self, paths=[], geom=True):
 
         paths_copy= deepcopy(paths)
@@ -418,40 +331,22 @@ class SrlgDisjointSolver:
         starttime = time.time()
 
         # STEP 0: Find shortest s->t path (heuristics)
-        firstpath = nx.shortest_path(self.PG.G, self.PG.s, self.PG.t, weight="length")
-        log.info(f'Shortest path found: {firstpath}')
+        self.shortestpath = nx.shortest_path(self.PG.G, self.PG.s, self.PG.t, weight="length")
+        log.info(f'Shortest path found: {self.shortestpath}')
 
-        # STEP 1.1: Check if the found s->t path + any of the srlg-s disconnect the graph.
-        #  if yes, halt and say >>> oh no <<< 
-        if not self._path_does_not_cut(firstpath):
-            #logging.warning(f' First path not good, exiting.')
-            raise Exception("First path not good!") # TODO find a good path somehow
-        
-        # If there are no problems, we can save the resulting path for k = 1
-        self.firstpath = firstpath
 
         # SOLUTION K = 1
         self.k += 1 
-        self.pathqueue.append(firstpath)
-        self.results[self.k] = [firstpath]
+        self.pathqueue.append(self.shortestpath)
+        self.results[self.k] = [self.shortestpath]
 
         self.wait_for_signal(iterfinish=True)       # IMPORTANT: these calls are for the GUI. If no gui is set, nothing happens. 
 
-        # STEP 2: Find first two paths using the clockwise-region srlg-edge removal method
+        # STEP 1: Assuming there is an s-t path, and assuming there are no cutting SRLG-s
+        # try to fid k=2 solution.  
+        self._basecase_tuti()
 
-        if False:
-            self._find_first_two_paths()
-            if len(self.pathqueue) == 1:
-                self.finished = True
-            else:
-                # SOLUTION K = 2
-                self.k += 1 
-                self.results[self.k] = deepcopy(self.pathqueue) # Copy results 
-                
-                self.wait_for_signal(iterfinish=True)
-        else:
-            self._basecase_tuti()
-        # STEP 3: Using the already found k (>=2) paths, try calculating k+1 new paths 
+        # STEP 2: Using the already found k (>=2) paths, try calculating k+1 new paths 
 
         # SOLUTIONS K >= 3
         

@@ -11,6 +11,7 @@ TODO
     + better separated debugging / info code segments 
 
 + tasks
+    + k=2 basecase :: ONly take the clockwise side of SRLGs into account 
     + implement min-cut algorithm 
     + deal with primal-dual connected srlgs 
     + check if the solution still works with the ommitance of the "right-of" path constraint 

@@ -94,39 +94,41 @@ class DualGraph():
         
         return g
 
-    def get_shrunk_slrgs(self, srlg, i):
+    def get_shrunk_slrgs(self, srlg, di):
 
         # get the subgraph composited of the SRLG
-        DS = nx.Graph()
+        DSLRG = nx.Graph()
         dualedges = []
         for e, f in srlg:
             for u, v, d in self.G.edges(data=True):
-                if (e == u and f == v) or (e == v and f == u):
-                    dualedges.append([d['ot'], d['of']])
-        DS.add_edges_from(dualedges)
+                if (e == d['ot'] and f == d['of']) or (e == d['of'] and f == d['ot']):
+                    dualedges.append([u, v])
+        DSLRG.add_edges_from(dualedges)
 
         # "Blow up" the subgraph according to the rule 
         subgraphs = []
-        paths = dict(nx.all_pairs_shortest_path(DS))
-        reachable_dual_nodes = []
-        for dn in DS.nodes:
+        paths = dict(nx.all_pairs_shortest_path(DSLRG))
+        
+        for dn in DSLRG.nodes:
+            reachable_dual_nodes = []
             for k, v in paths[dn].items(): 
-                if len(v) <= i: 
+                if len(v) <= di: 
                     reachable_dual_nodes.append(k)
-            H = DS.subgraph(reachable_dual_nodes + [dn])
+            H = DSLRG.subgraph(reachable_dual_nodes)
             subgraphs.append(H)
 
-        # Convert the remaining subgrraphs back to primal edge sets 
+        # Convert the remaining subgraphs back to primal edge sets 
         # And throw out |S| = 1 sets 
         newsets = []
         for SG in subgraphs:
-            if SG.number_of_edges == 1:
+            if len(SG.edges()) == 1:
                 continue
             s_set = []
             for u, v in SG.edges():
                 s_set.append((
-                    self.G[u][v]['ot'], 
-                    self.G[u][v]['of']
+                    self.G[u][v][0]['ot'], 
+                    self.G[u][v][0]['of']
                 ))
+            newsets += s_set
 
         return newsets
