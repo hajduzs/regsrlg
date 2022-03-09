@@ -91,7 +91,6 @@ class SrlgDisjointSolver:
         if iterfinish: 
             self.gui._solution = None
        
-    
     ## Speeding up heuristic
     def add_to_fallback(self, p):
         self.fallbackqueue.append(p)
@@ -115,23 +114,6 @@ class SrlgDisjointSolver:
             else:
                 jss_new.append(srlg)
         return jss_new
-
-
-    # TODO depracated 
-    def _refresh_jss_with_point_failures(self):
-        """Generates SLRG-s coming from point failures and updates jss with them. 
-        """        
-        ps = []
-        for node in self.jsg['nodes']:
-            if node['id'] != self.s and node['id'] != self.t:       # exclude s and t so we can actually find more than 1 path.
-                n = []
-                for e in self.jsg['edges']:
-                    if e['from'] == node['id']:
-                        n.append([node['id'], e['to']])
-                    if e['to'] == node['id']:
-                        n.append([node['id'], e['from']])
-                ps.append(n)
-        self.jss.extend(ps)
 
 
     def _calc_max_iter(self):
@@ -263,7 +245,7 @@ class SrlgDisjointSolver:
             self.finished = True                                # We stop
             self.wait_for_signal(iterfinish=True)
 
-            
+           
     def shortening_heurisctic(self, paths=[], geom=True):
 
         paths_copy= deepcopy(paths)
@@ -416,3 +398,6 @@ class SrlgDisjointSolver:
         return good_path_found
 
             
+    def min_cut(self):
+        # TODO: calculate MIN-CUT using algorithm
+        pass
