@@ -131,4 +131,10 @@ class DualGraph():
                 ))
             newsets += s_set
 
-        return newsets
+        #Finally, remove duplicate elements 
+        no_duplicates = []
+        for elem in newsets:
+            if elem not in no_duplicates:
+                no_duplicates.append(elem)
+
+        return no_duplicates

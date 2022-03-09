@@ -222,12 +222,15 @@ class SrlgDisjointSolver:
 
         P = flow_based_paths[0]
 
-        # 2. step: iterating to max diam/2, while multiplying i (in Si) by 2 
+        # 2. step: iterating to max diam/2, while multiplying getting 
         d = max(self.get_srlg_metrics()['sdn']) # get max diameter
         i, maxiter = 1, math.ceil(math.log2(d))
         
         good_path_found = False
         newk = True
+
+        self.oldestpath = P                               
+        self.newestpath = P                            # Get the newest path from the solution path queue
 
         while i <= maxiter:
 
@@ -238,25 +241,19 @@ class SrlgDisjointSolver:
 
             # Load new SRLG set into the Algorithm 1 solver
             shrunksrlgs = self.PG._init_srlg_list(self.jsg, i_srlg)
-            # Try to caluculate new path based on the main algorithm using the new set of srlgs
 
-            self.oldestpath = P                               
-            self.newestpath = P                            # Get the newest path from the solution path queue
-            self.novelpath = self.PG.caluclate_next_cw_path(self.newestpath, shrunksrlgs, newk=newk)    # Calculate novel (k+1 th), closest CW path to the newest
-
-            self.wait_for_signal()
-
-            # If new path is srlg- and point-disjoint with the oldest path we are done with the k-th iteration!
-            if self.PG.srlg_disjoint(self.oldestpath, self.novelpath, shrunksrlgs):
-                paths_ok = True
-            else:
-                paths_ok = False
             
-                
-                
+            # Try to caluculate new path based on the main algorithm using the new set of srlgs
+            path_found = self.main_alg(shrunksrlgs)
+
+            if not path_found:
+                self.finished = True                                # We stop
+                self.wait_for_signal(iterfinish=True)
+                break
+
             i += 1
 
-        if paths_ok:
+        if path_found:
             self.k += 1 
             self.pathqueue.append(self.novelpath)               # Add new path to queue
             self.results[self.k] = deepcopy(self.pathqueue)     # Copy results 
@@ -350,7 +347,20 @@ class SrlgDisjointSolver:
 
         # SOLUTIONS K >= 3
         
-        self.main_alg()
+        while not self.finished:
+
+            good_path_found = self.main_alg()
+
+            if good_path_found:
+                self.k += 1 
+                self.pathqueue.append(self.novelpath)               # Add new path to queue
+                self.results[self.k] = deepcopy(self.pathqueue)     # Copy results 
+                self.iternum = 0
+                self.wait_for_signal(iterfinish=True)
+            else:
+                self.finished = True                                # We stop
+                self.wait_for_signal(iterfinish=True)
+
 
         self.time_core = time.time() - starttime
         
@@ -373,45 +383,36 @@ class SrlgDisjointSolver:
         print('solved')
 
     def main_alg(self, srlgs_set=None): 
-        while not self.finished:
-            # try for k+1 paths 
-            good_path_found = False
-            newk = True
-            for i in range(self.max_iter):
-                
-                self.iternum += 1
+        good_path_found = False
+        newk = True
+        for i in range(self.max_iter):
+            
+            self.iternum += 1
 
-                    # if the fallbackqueue is the same as the pathqueue it means we have come "full cycle" and no further improvements are possible
-                if self.fallbackqueue == self.pathqueue:
-                    self.finished = True
-                    log.debug('Stopping because no further imporvements are possible')
-                    break
+                # if the fallbackqueue is the same as the pathqueue it means we have come "full cycle" and no further improvements are possible
+            if self.fallbackqueue == self.pathqueue:
+                self.finished = True
+                log.debug('Stopping because no further imporvements are possible')
+                break
 
-                self.oldestpath = self.pathqueue[0]                                 # Get the oldest path from the solution path queue
-                self.newestpath = self.pathqueue[-1]                                # Get the newest path from the solution path queue
-                self.novelpath = self.PG.caluclate_next_cw_path(self.newestpath, srlgs_set, newk=newk)    # Calculate novel (k+1 th), closest CW path to the newest
+            self.oldestpath = self.pathqueue[0]                                 # Get the oldest path from the solution path queue
+            self.newestpath = self.pathqueue[-1]                                # Get the newest path from the solution path queue
+            self.novelpath = self.PG.caluclate_next_cw_path(self.newestpath, srlgs_set, newk=newk)    # Calculate novel (k+1 th), closest CW path to the newest
 
-                self.wait_for_signal()
+            self.wait_for_signal()
 
-                # If new path is srlg- and point-disjoint with the oldest path we are done with the k-th iteration!
-                if self.PG.srlg_disjoint(self.oldestpath, self.novelpath, srlgs_set) and self.oldestpath != self.novelpath:
-                    good_path_found = True
-                    log.info(f'good path for k = {self.k} found!')
-                    self.fallbackqueue = []
-                    break
-                # If not, delete oldest path and add novel path to the end of the queue
-                else:
-                    self.add_to_fallback(deepcopy(self.pathqueue[0]))
-                    del self.pathqueue[0]
-                    self.pathqueue.append(self.novelpath)
-                    newk=False
-
-            if good_path_found:
-                self.k += 1 
-                self.pathqueue.append(self.novelpath)               # Add new path to queue
-                self.results[self.k] = deepcopy(self.pathqueue)     # Copy results 
-                self.iternum = 0
-                self.wait_for_signal(iterfinish=True)
+            # If new path is srlg- and point-disjoint with the oldest path we are done with the k-th iteration!
+            if self.PG.srlg_disjoint(self.oldestpath, self.novelpath, srlgs_set) and self.oldestpath != self.novelpath:
+                good_path_found = True
+                log.info(f'good path for k = {self.k} found!')
+                self.fallbackqueue = []
+                break
+            # If not, delete oldest path and add novel path to the end of the queue
             else:
-                self.finished = True                                # We stop
-                self.wait_for_signal(iterfinish=True)
+                self.add_to_fallback(deepcopy(self.pathqueue[0]))
+                del self.pathqueue[0]
+                self.pathqueue.append(self.novelpath)
+                newk=False
+        return good_path_found
+
+            

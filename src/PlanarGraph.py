@@ -115,11 +115,11 @@ class PlanarGraph:
         if (not p1) or (not p2): # if eiter paths are empty, they are of course disjoint.
             return True
 
-        if srlgs_set is not None:
+        if srlgs_set is None:
             SS = self.S
         else:
             SS = srlgs_set
-        p1_srlg_edges = set().union(*[self.S[edge] for edge in path_to_edgeset(p1)])   # All the edges that are in a common SLRG with at least on edge in p1
+        p1_srlg_edges = set().union(*[SS[edge] for edge in path_to_edgeset(p1)])   # All the edges that are in a common SLRG with at least on edge in p1
         p2_edges = path_to_edgeset(p2)  # Edges on p2 
         return not p2_edges.intersection(p1_srlg_edges) # If there are no edges on p2 which are in the srlg-set of p1, then the two paths are disjoint.
 
