@@ -19,6 +19,14 @@
             "program": "routeslrg.py",
             "args": ["debug/janos/janos.lgf", "debug/janos/srlg_byhand_1/janos.lgf.srlg", "0", "1", "-d", "-u"],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "debugUI2",
+            "type": "python",
+            "request": "launch",
+            "program": "routeslrg.py",
+            "args": ["debug/zs/mincut.lgf", "debug/zs/srlg_mc0/mincut.lgf.srlg", "0", "1", "-d", "-u"],
+            "console": "integratedTerminal"
         }
     ]
 } 
