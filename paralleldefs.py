@@ -1,6 +1,7 @@
 from src.SrlgDisjointSolver import SrlgDisjointSolver
 from copy import deepcopy
 
+
 def solve_and_get_result(GDIR, possibleuvs, SDIR, jsg, jss):
     num_runs = 0
     num_succ_runs = 0

@@ -55,7 +55,7 @@ t = args.target[0]
 solver = SrlgDisjointSolver(json_graph, json_list, int(s), int(t))
 
 if args.gui:
-    from src.SolverGUI import SolverGUI     # ugly import in the middle of the file TODO
+    from src.SolverGUI import SolverGUI     # ugly import in the middle of the file 
     gui = SolverGUI(solver)
     gui.mainloop()
 else:

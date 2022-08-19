@@ -21,11 +21,53 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "debugUI2",
+            "name": "debugUI_mc0",
             "type": "python",
             "request": "launch",
             "program": "routeslrg.py",
             "args": ["debug/zs/mincut.lgf", "debug/zs/srlg_mc0/mincut.lgf.srlg", "0", "1", "-d", "-u"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "debug_mc0",
+            "type": "python",
+            "request": "launch",
+            "program": "routeslrg.py",
+            "args": ["debug/zs/mincut.lgf", "debug/zs/srlg_mc0/mincut.lgf.srlg", "0", "1", "-d"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "debug_edit",
+            "type": "python",
+            "request": "launch",
+            "program": "routeslrg.py",
+            "args": [
+                "/home/zsomb/work/regsrlg/archive/v4_2/att-phys_/att-phys_.gml", 
+                "/home/zsomb/work/regsrlg/archive/v4_2/att-phys_/srlg_fromdual_3_2/att-phys_.gml.srlg", 
+                "23", "80", "-d"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "debugUI_mc1",
+            "type": "python",
+            "request": "launch",
+            "program": "routeslrg.py",
+            "args": ["debug/zs/mincut.lgf", "debug/zs/srlg_mc1/mincut.lgf.srlg", "0", "1", "-d", "-u"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "debugUI_mc2",
+            "type": "python",
+            "request": "launch",
+            "program": "routeslrg.py",
+            "args": ["debug/mc2/mc2.lgf", "debug/mc2/srlg_mc2/mc2.lgf.srlg", "0", "11", "-d", "-u"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "plot",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/plotgraph.py",
             "console": "integratedTerminal"
         }
     ]

@@ -56,6 +56,11 @@ class DirectedEdge(Edge):
             DirectedEdge: Directed edge going from v to u.
         """        
         return DirectedEdge(self.y, self.x)
+    
+    def to_undirected(self):
+        """Get undirected version for hashing when needed
+        """
+        return Edge(self.x, self.y)
 
 
 class Circulator:

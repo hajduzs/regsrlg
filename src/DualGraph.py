@@ -1,16 +1,21 @@
 
 import networkx as nx
-from networkx.classes.function import subgraph
 from src.geometry.Point import Point
-from src.geometry.operations_2d import point_to_point
 from src.util.HelperClasses import DirectedEdge, Edge
+from copy import deepcopy
 
 
 class DualGraph():
 
     def __init__(self, pg):
         self.PG = pg
+        self.jsdata = []
+        self.edge_regions = []
+        self.regions = []
+        self.em_pr_to_du = dict()       # Primal to dual edge mapping (key: p, value: d)
+        self.em_du_to_pr = dict()       # Dual to primal edge mapping (key: d, value: p)
         self.G = self._init_dual()
+        
 
     def _init_dual(self):
         
@@ -41,13 +46,19 @@ class DualGraph():
 
         regions = find_dual()
 
+
         def middle_point(face):
             p = Point(0,0)
             for e in face:
                 p += self.PG.G.nodes[e[0]]['coords']
             return p / len(face)
 
-        dualnodes = {f:(i, middle_point(f)) for i, f in enumerate(regions)}
+        dualnodes = dict()
+        self.regions = dict()
+
+        for i, f in enumerate(regions):
+            dualnodes[f] = (i, middle_point(f))
+            self.regions[f] = i 
 
         edge_regions = dict()
         for region in regions:
@@ -58,6 +69,7 @@ class DualGraph():
                 else:
                     edge_regions[e] = [region]
 
+        self.edge_regions = deepcopy(edge_regions)
 
         # Build the dual graph from face data
         DG = {
@@ -80,6 +92,8 @@ class DualGraph():
                 'to': dualnodes[regions[1]][0],
             })
 
+        self.jsdata = DG
+
         g = nx.MultiGraph()
         for n in DG['nodes']:  # Get every point of the graph with coordinates
             g.add_node(n['id'], coords = Point(n['coords'][0], n['coords'][1]))
@@ -91,6 +105,8 @@ class DualGraph():
                 of = e['of'],
                 ot = e['ot'], 
             )
+            self.em_du_to_pr[Edge(e['from'], e['to'])] = Edge(e['of'], e['ot'])
+            self.em_pr_to_du[Edge(e['of'], e['ot'])] = Edge(e['from'], e['to'])
         
         return g
 

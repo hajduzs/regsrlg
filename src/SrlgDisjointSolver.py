@@ -1,4 +1,5 @@
 import math
+from pprint import pprint
 from typing import FrozenSet
 from networkx.convert import to_dict_of_dicts
 from src.DualGraph import DualGraph
@@ -26,10 +27,17 @@ class SrlgDisjointSolver:
         # INITIALIZATION of SLRG list, and Graphs.
         self.jss = self._remove_cutting_slrgs()         # To get better results, we exclude SRLGs from the input list that would cut all s-t paths.
         self._jss_orig = deepcopy(self.jss)             # Save original SRLG list
-        #self._refresh_jss_with_point_failures()         # Add point-failure srlgs to SRLG-list so point disjointness of paths is guaranteed this way
+        self._refresh_jss_with_point_failures()         # Add point-failure srlgs to SRLG-list so point disjointness of paths is guaranteed this way
+
+        #self.srlg_index = self.create_srlg_index(self._jss_orig)
+        #self.srlg_index_withpoints = self.crecreate_srlg_index(self.jss)
+
+        self._srlg_map = self.create_slrg_mapping(self._jss_orig)
+        self._srlg_map_withpoints = self.create_slrg_mapping(self.jss)
+
         self.PG = PlanarGraph(graph, self.jss, s, t)    # The planar Graph instance used for finding paths 
         self.DG = DualGraph(self.PG)                    # Dual of the planar graph
-        self.max_iter = self._calc_max_iter()           # maximum number of iterations (stopping point 1)
+        self.max_iter = self.PG.G.number_of_edges() - self.PG.G.number_of_nodes() + 3        # maximum number of iterations (stopping point 1)
 
         # Working variables                             - note: path lists contain lists of node ids.
         self.iternum = 0                                # how many times we have tried in the current iteration
@@ -48,12 +56,12 @@ class SrlgDisjointSolver:
         self.maxpaths_ah_dist = []                      # Paths found for k=max after shortening heuristic, minimising geometric distance
 
         # Metrics from the run 
-        self.shortestpath = []                             # Shortest path found for k=1, saved for convinience                                                
+        self.shortestpath = []                          # Shortest path found for k=1, saved for convinience                                                
         self.time_core = 0                              # Time needed for the core algoritms to run
         self.time_heur_node = 0                         # Time needed for the shortening heuristic (minimising node count) to run.
         self.time_heur_dist = 0                         # Time needed for the shortening heuristic (minimising geom. dist) to run.
 
-        # Variables associated with the GUI 
+        # GUI 
         self.gui = None
 
         
@@ -98,6 +106,36 @@ class SrlgDisjointSolver:
             del self.fallbackqueue[0]
     
     
+    def _refresh_jss_with_point_failures(self):
+        """Generates SLRG-s coming from point failures and updates jss with them. 
+        """        
+        ps = []
+        for node in self.jsg['nodes']:
+            if node['id'] != self.s and node['id'] != self.t:       # exclude s and t so we can actually find more than 1 path.
+                n = []
+                for e in self.jsg['edges']:
+                    if e['from'] == node['id']:
+                        n.append([node['id'], e['to']])
+                    if e['to'] == node['id']:
+                        n.append([node['id'], e['from']])
+                ps.append(n)
+        self.jss.extend(ps)
+
+    def create_slrg_mapping(self, list):
+        D = dict()
+        for s in list: 
+            for i in range(0, len(s)):
+                if Edge(*s[i]) not in D:
+                    D[Edge(*s[i])] =[{Edge(a,b) for a,b in s[:i]+s[i+1:]}]
+                else:
+                    D[Edge(*s[i])].append({Edge(a,b) for a,b in s[:i]+s[i+1:]})
+        for e in self.jsg["edges"]:
+            x,y  =e["from"], e["to"]
+            if Edge(x,y) not in D:
+                D[Edge(x,y)] = [{}]
+        return D
+               
+    
     def _remove_cutting_slrgs(self):
         """Removes SLRG-s form the list which result in all s-t paths getting cut.
         """
@@ -114,16 +152,6 @@ class SrlgDisjointSolver:
             else:
                 jss_new.append(srlg)
         return jss_new
-
-
-    def _calc_max_iter(self):
-        """A function to calculate the maximum iterations needed when calculating k srlg-disjoint paths.
-        It is |E| - |V| + 3 (so the number of faces in the planar graph + 1)
-
-        Returns:
-            int: The maximum number of iterations needed to determine the stopping point.
-        """        
-        return self.PG.G.number_of_edges() - self.PG.G.number_of_nodes() + 3
 
 
     def _path_does_not_cut(self, p):
@@ -146,9 +174,10 @@ class SrlgDisjointSolver:
                 #logging.warning(f' SLRG {srlg} with path {p} disconnects s from t!')
                 return False
         return True
-                
 
+    # SEEMS LIKE I DONT USE THIS FUNCTION. WHY IS IT HERE? I HATE MYSELF          
     def _get_srlgs_containing_edge(self, u: int, v: int, original=False) -> List[Set[Edge]]:
+        return "XD"
         """Returns all SLRG-s containing the u-v edge.
 
         Args:
@@ -208,8 +237,6 @@ class SrlgDisjointSolver:
         d = max(self.get_srlg_metrics()['sdn']) # get max diameter
         i, maxiter = 1, math.ceil(math.log2(d))
         
-        good_path_found = False
-        newk = True
 
         self.oldestpath = P                               
         self.newestpath = P                            # Get the newest path from the solution path queue
@@ -309,7 +336,7 @@ class SrlgDisjointSolver:
 
         starttime = time.time()
 
-        # STEP 0: Find shortest s->t path (heuristics)
+        # STEP 0: Find shortest s->t path -- ONLY for k=1, otherwise this path sould not be used for e.g. staring the main algorithm with. 
         self.shortestpath = nx.shortest_path(self.PG.G, self.PG.s, self.PG.t, weight="length")
         log.info(f'Shortest path found: {self.shortestpath}')
 
@@ -321,13 +348,10 @@ class SrlgDisjointSolver:
 
         self.wait_for_signal(iterfinish=True)       # IMPORTANT: these calls are for the GUI. If no gui is set, nothing happens. 
 
-        # STEP 1: Assuming there is an s-t path, and assuming there are no cutting SRLG-s
-        # try to fid k=2 solution.  
+        # STEP 1: try to find k=2 solution.  
         self._basecase_tuti()
 
         # STEP 2: Using the already found k (>=2) paths, try calculating k+1 new paths 
-
-        # SOLUTIONS K >= 3
         
         while not self.finished:
 
@@ -363,6 +387,9 @@ class SrlgDisjointSolver:
         
         self.wait_for_signal(iterfinish=True)
         print('solved')
+        print("mincut starting")
+
+        self.min_cut()
 
     def main_alg(self, srlgs_set=None): 
         good_path_found = False
@@ -399,5 +426,79 @@ class SrlgDisjointSolver:
 
             
     def min_cut(self):
-        # TODO: calculate MIN-CUT using algorithm
-        pass
+        # First things first, we need to build the axuilary graph. For this, we are going to need the final results.
+        
+        AG = nx.DiGraph()
+
+        for path in self.results[self.k]:
+            pathedges = set()
+            for i in range(0, len(path) -1):
+                 pe = DirectedEdge(path[i], path[i+1])
+                 pathedges.add(pe)
+
+            pr_right = set()
+            pr_left = set()
+            for de in pathedges: 
+                FR_A = self.DG.edge_regions[de.to_undirected()][0]
+                FR_B = self.DG.edge_regions[de.to_undirected()][1]
+                if de in FR_A:
+                    pr_left.add(self.DG.regions[FR_A])
+                    pr_right.add(self.DG.regions[FR_B])
+                else:
+                    pr_left.add(self.DG.regions[FR_B])
+                    pr_right.add(self.DG.regions[FR_A])
+
+            # Here pr_right contains all the dual nodes on the right side of the path
+            # and pr_left contains all dual nodes on the left. 
+
+            for pe in pathedges:
+                de = self.DG.em_pr_to_du[pe.to_undirected()]
+
+                if de.a in pr_left:
+                    f_left = de.a
+                    f_right = de.b
+                else:
+                    f_left = de.b
+                    f_right = de.a
+                
+                for s in self._srlg_map_withpoints[pe.to_undirected()]:
+                    SG = nx.Graph()
+                    SG.add_edge(*de.unpack())
+                    SG.add_edges_from([e.unpack() for e in s])
+
+                    tree_r = nx.bfs_tree(SG, f_left)
+                    tree_l = nx.bfs_tree(SG, f_right)
+
+
+                    # TODO here we must not "go back" so left-right face nodes on the path must be 
+                    # used as a guard. 
+                    reachable_faces_left = nx.descendants(tree_l, f_right)
+                    reachable_faces_right = nx.descendants(tree_r, f_left)
+
+                    for ln in reachable_faces_left:
+                        for rn in reachable_faces_right:
+                            AG.add_edge(ln, rn)
+
+        # Build the matrix using the data in the AG.
+
+        AG.remove_edges_from([(i,i) for i in range(AG.number_of_nodes())])
+        SP = dict(nx.all_pairs_shortest_path(AG))
+        M = [[0 for i in range(AG.number_of_nodes())] for j in range(AG.number_of_nodes())]
+
+        for i in range(AG.number_of_nodes()):
+            for j in range(AG.number_of_nodes()):
+                if i in SP and j in SP[i]:
+                    M[i][j] = len(SP[i][j])
+                    if i == j:
+                        AG.add_node("X")
+                        oe = list(AG.out_edges(i))
+                        AG.add_edges_from([("X", oe[k][1]) for k in range(len(oe))])
+                        if nx.has_path(AG, "X", i):
+
+                            M[i][j] = len(nx.shortest_path(AG, "X", i)) -1
+                        else:
+                            M[i][j] = 0
+                        AG.remove_node("X")
+
+
+        print("xd")
