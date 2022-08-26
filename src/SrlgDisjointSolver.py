@@ -43,7 +43,7 @@ class SrlgDisjointSolver:
         self.iternum = 0                                # how many times we have tried in the current iteration
         self.finished = False                           # Boolean indicating if we have come to the end (max k) or not.
         self.k = 0                                      # Current Maximum number of srlg-disjoint paths found
-        self.pathqueue = []                             # Current queue of paths during an iteration for a specific k.
+        self.pathqueue = []                             # Current queue of paths during an iteration for a specific k. (contains P1, P2.. P(k-l))
         self.fallbackqueue = []                         # Fallback queue for heuristically speeding up stop
         self.oldestpath = []                            # Current oldest path   -   pathqueue[0]
         self.newestpath = []                            # Current latest path   -   pathqueue[-1]
@@ -406,12 +406,12 @@ class SrlgDisjointSolver:
 
             self.oldestpath = self.pathqueue[0]                                 # Get the oldest path from the solution path queue
             self.newestpath = self.pathqueue[-1]                                # Get the newest path from the solution path queue
-            self.novelpath = self.PG.caluclate_next_cw_path(self.newestpath, srlgs_set, newk=newk)    # Calculate novel (k+1 th), closest CW path to the newest
+            self.novelpath = self.PG.caluclate_next_cw_path(self.oldestpath, self.newestpath, srlgs_set, newk=newk)    # Calculate novel (k+1 th), closest CW path to the newest
 
             self.wait_for_signal()
 
             # If new path is srlg- and point-disjoint with the oldest path we are done with the k-th iteration!
-            if self.PG.srlg_disjoint(self.oldestpath, self.novelpath, srlgs_set) and self.oldestpath != self.novelpath:
+            if self.PG.srlg_disjoint(self.newestpath, self.novelpath, srlgs_set) and self.oldestpath != self.novelpath:
                 good_path_found = True
                 log.info(f'good path for k = {self.k} found!')
                 self.fallbackqueue = []
@@ -501,4 +501,4 @@ class SrlgDisjointSolver:
                         AG.remove_node("X")
 
 
-        print("xd")
+        print("now what")

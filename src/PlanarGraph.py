@@ -183,12 +183,13 @@ class PlanarGraph:
 
         return frozenset(r)    
 
-    def caluclate_next_cw_path(self, path: List[int], srlgs_set, newk:bool) -> List[int]:
+    def caluclate_next_cw_path(self, oldestpath: List[int], newestpath: List[int], srlgs_set, newk:bool) -> List[int]:
         """Calculates the closest possible path in clockwise-orientation to the given path,
         taking srlg and point disjointness into account.
 
         Args:
-            path (List[int]): The path as a list of nodes.
+            oldestpath (List[int]): The path as a list of nodes.
+            newestpath (List[int]): The path as a list of nodes.
 
         Returns:
             List[int]: The closest possible path in clockwise-orientation found to the given path.
@@ -241,6 +242,19 @@ class PlanarGraph:
 
         # Calling previously defined function.
         # call with pn = first node of the path, to ensure right cw precedence.
+
+        # We set starting conditions here. If the algorithm is called with oldestpath set to sometginh,
+        # we start the dfs from the oldest paths's first edge. 
+        path = newestpath
+        fe = self._edges_left_of_path(newestpath)
+
+        if oldestpath is not None and srlgs_set is not None:
+            path = oldestpath
+            if not newk:
+                fe = fe.update(self._edges_left_of_path(oldestpath))
+            else:
+                fe = {}
+
         if newk:
             res = dfs(self.s, path[1], set(), set(path[:-1]), path_to_edgeset(path), {})    
         else:
