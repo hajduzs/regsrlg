@@ -191,4 +191,8 @@ def get_run_metrics_from_solver(solver):
 
     m['tsfn'] = sum([len(p) for p in flow_based_paths])
 
+    # min cut info 
+
+    m['mincut_diff'] = solver.mincut_diff
+
     return m

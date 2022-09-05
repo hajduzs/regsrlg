@@ -154,3 +154,9 @@ class DualGraph():
                 no_duplicates.append(elem)
 
         return no_duplicates
+
+    def is_dual_connected(self, prmial_srlg): 
+        dual_srlg = [self.em_pr_to_du(e) for e in prmial_srlg]
+        H = nx.Graph() 
+        H.add_edges_from([(e.x, e.y) for e in dual_srlg])
+        return nx.is_connected(H)

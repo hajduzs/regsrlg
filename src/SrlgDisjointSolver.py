@@ -1,4 +1,5 @@
 import math
+from multiprocessing import connection
 from pprint import pprint
 from typing import FrozenSet
 from networkx.convert import to_dict_of_dicts
@@ -60,6 +61,7 @@ class SrlgDisjointSolver:
         self.time_core = 0                              # Time needed for the core algoritms to run
         self.time_heur_node = 0                         # Time needed for the shortening heuristic (minimising node count) to run.
         self.time_heur_dist = 0                         # Time needed for the shortening heuristic (minimising geom. dist) to run.
+        self.mincut_diff = -1                           # The number whic MIN-CUT differs from MAX-FLOW
 
         # GUI 
         self.gui = None
@@ -411,7 +413,7 @@ class SrlgDisjointSolver:
             self.wait_for_signal()
 
             # If new path is srlg- and point-disjoint with the oldest path we are done with the k-th iteration!
-            if self.PG.srlg_disjoint(self.newestpath, self.novelpath, srlgs_set) and self.oldestpath != self.novelpath:
+            if self.PG.srlg_disjoint(self.oldestpath, self.novelpath, srlgs_set) and self.oldestpath != self.novelpath:
                 good_path_found = True
                 log.info(f'good path for k = {self.k} found!')
                 self.fallbackqueue = []
@@ -461,7 +463,7 @@ class SrlgDisjointSolver:
                     f_left = de.b
                     f_right = de.a
                 
-                for s in self._srlg_map_withpoints[pe.to_undirected()]:
+                for s in self._srlg_map[pe.to_undirected()]:
                     SG = nx.Graph()
                     SG.add_edge(*de.unpack())
                     SG.add_edges_from([e.unpack() for e in s])
@@ -501,4 +503,72 @@ class SrlgDisjointSolver:
                         AG.remove_node("X")
 
 
+        # Check for (piros k) = 0
+
+        k = self.k
+
+        for i in range(len(M)):
+                if M[i][i] == k: 
+                    self.mincut_diff = 0
+                    logging.info("MIN-CUT = MAX-FLOW")
+                    return
+
+
+        # And now, we create a mapping from the dual graph's regions: for every (k) region, the (v)alue will be a set of other regions (only indexes)
+        # that can be reached using only SRLG edges. (assuming all SRLG-s are dual connected - because I'm lazy with the code.)
+
+        connections = dict()
+        for i in range(len(M)):
+            connections[i] = set()
+        
+        for key, val in self._srlg_map.items():
+            k = self.DG.em_pr_to_du[key]
+            v = []
+            for edgeset in val:
+                for edge in edgeset: 
+                    v += [e for e in self.DG.em_pr_to_du[edge]]
+            allpoints = set(k.x, k.y)           
+            allpoints.update([e.x for e in v])
+            allpoints.update([e.y for e in v])
+            AP = list(allpoints)
+            for i in range(len(AP)):
+                connections[AP[i]].update(AP[:i] + AP[i+1:])
+
+        
+        # Piros k = 1 hogy kell minden tartomany par amin at tudunk menni (egy darab) srlg eleken. hogya ez i,j akkor a MX i,j ben kell lennie k-nak es megvagyunk 
+        # A segedgraf eredeti B pedig a sima slrg elek bevetelevel 
+
+        # 1: A majd 1 B
+
+        # Check for (piros k ) = 1
+
+        for i in range(len(M)):
+            for j in range(len(M)):
+                if M[i][j] == k: 
+                    if j in connections[i]:
+                        self.mincut_diff = 1
+                        logging.info("MIN-CUT = MAX-FLOW + 1")
+                        return
+
+
+        # 2: i az A-ban 1 a B-nen, j az A-ban 1 a B-ben (i+j = k, ezek körök)
+        # =2 peid ket ilyen slrg el van (i1j1 = a, i2j2 = b, a+b = k )
+
+        # Check for (piros k) = 
+        # (at this point, we are sure that this is the case so we could skip this altogether, but...)
+
+        for i1 in range(len(M)):
+            for j1 in range(len(M)):
+                for i2 in range(len(M)):
+                    for j2 in range(len(M)):
+                        if M[i1][j1] + M[i2][j2] == k: 
+                            if j1 in connections[i1] and j2 in connections[i2]:
+                                self.mincut_diff = 2
+                                logging.info("MIN-CUT = MAX-FLOW + 2")
+                                return
+
+         
+
+
         print("now what")
+        return 
