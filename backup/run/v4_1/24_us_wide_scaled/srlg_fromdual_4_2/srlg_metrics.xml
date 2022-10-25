@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<all>
+	<gen>fromdual</gen>
+	<ns>10</ns>
+	<sec>
+		<item>4</item>
+		<item>4</item>
+		<item>4</item>
+		<item>4</item>
+		<item>4</item>
+		<item>4</item>
+		<item>4</item>
+		<item>4</item>
+		<item>4</item>
+		<item>4</item>
+	</sec>
+	<sdn>
+		<item>3</item>
+		<item>3</item>
+		<item>3</item>
+		<item>3</item>
+		<item>3</item>
+		<item>3</item>
+		<item>3</item>
+		<item>3</item>
+		<item>4</item>
+		<item>3</item>
+	</sdn>
+	<fromfile>24_us_wide_scaled.lgf.srlg</fromfile>
+	<runs/>
+</all>

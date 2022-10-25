@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<all>
+	<s>18</s>
+	<t>23</t>
+	<stc>3</stc>
+	<k>3</k>
+	<ti_c>0.012879610061645508</ti_c>
+	<ti_hn>0.002366781234741211</ti_hn>
+	<ti_hd>0.0025069713592529297</ti_hd>
+	<pl_bh_avg_no>4.333333333333333</pl_bh_avg_no>
+	<pl_bh_avg_di>1916.487108863398</pl_bh_avg_di>
+	<pl_ahn_avg_n>4.333333333333333</pl_ahn_avg_n>
+	<pl_ahn_min_n>3</pl_ahn_min_n>
+	<pl_ahn_max_n>6</pl_ahn_max_n>
+	<pl_ahn_avg_d>1916.487108863398</pl_ahn_avg_d>
+	<pl_ahn_min_d>653.7630002677618</pl_ahn_min_d>
+	<pl_ahn_max_d>3383.384672525177</pl_ahn_max_d>
+	<pl_ahd_avg_n>4.333333333333333</pl_ahd_avg_n>
+	<pl_ahd_min_n>3</pl_ahd_min_n>
+	<pl_ahd_max_n>6</pl_ahd_max_n>
+	<pl_ahd_avg_d>1916.487108863398</pl_ahd_avg_d>
+	<pl_ahd_min_d>653.7630002677618</pl_ahd_min_d>
+	<pl_ahd_max_d>3383.384672525177</pl_ahd_max_d>
+	<spln>3</spln>
+	<spld>653.7630002677618</spld>
+	<si>
+		<item>0</item>
+		<item>2</item>
+		<item>0</item>
+	</si>
+	<tssd>2366.076654065017</tssd>
+	<tssn>7</tssn>
+	<tsfd>2366.076654065017</tsfd>
+	<tsfn>11</tsfn>
+</all>

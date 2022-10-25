@@ -12,6 +12,7 @@ import networkx as nx
 from copy import deepcopy
 import time
 import logging
+from matplotlib import pyplot as plt
 
 log = logging.getLogger(__name__)                
 
@@ -243,7 +244,7 @@ class SrlgDisjointSolver:
         self.oldestpath = P                               
         self.newestpath = P                            # Get the newest path from the solution path queue
 
-        while i <= maxiter:
+        while i <= maxiter + 1:
 
             # Calculate new set of SLRG-s 
             
@@ -264,7 +265,7 @@ class SrlgDisjointSolver:
 
             i += 1
 
-        if path_found:
+        if path_found and self.novelpath != []:
             self.k += 1 
             self.pathqueue.append(self.novelpath)               # Add new path to queue
             self.results[self.k] = deepcopy(self.pathqueue)     # Copy results 
@@ -410,6 +411,11 @@ class SrlgDisjointSolver:
             self.newestpath = self.pathqueue[-1]                                # Get the newest path from the solution path queue
             self.novelpath = self.PG.caluclate_next_cw_path(self.oldestpath, self.newestpath, srlgs_set, newk=newk)    # Calculate novel (k+1 th), closest CW path to the newest
 
+            # TODO: this is kinda hacky, but if we get an empty path, we are done. 
+
+            if self.novelpath == []:
+                return False
+
             self.wait_for_signal()
 
             # If new path is srlg- and point-disjoint with the oldest path we are done with the k-th iteration!
@@ -471,11 +477,16 @@ class SrlgDisjointSolver:
                     tree_r = nx.bfs_tree(SG, f_left)
                     tree_l = nx.bfs_tree(SG, f_right)
 
+                    reachable_faces_left = nx.descendants(tree_l, f_right)
+                    reachable_faces_right = nx.descendants(tree_r, f_left)
 
                     # TODO here we must not "go back" so left-right face nodes on the path must be 
                     # used as a guard. 
-                    reachable_faces_left = nx.descendants(tree_l, f_right)
-                    reachable_faces_right = nx.descendants(tree_r, f_left)
+                    # "jo" ut: a baloldal es jobboldal metszete ures.
+                    # ha nem "jo" : akkor a jobbbol ki kell venni azt ami a metszet 
+
+                    # patch solution: (not sure if this is completely sound)
+                    # reachable_faces_right = reachable_faces_right - reachable_faces_left
 
                     for ln in reachable_faces_left:
                         for rn in reachable_faces_right:
@@ -483,24 +494,44 @@ class SrlgDisjointSolver:
 
         # Build the matrix using the data in the AG.
 
-        AG.remove_edges_from([(i,i) for i in range(AG.number_of_nodes())])
+        AG.remove_edges_from([(i,i) for i in range(AG.number_of_nodes())])  
+
+        #############################################################
+        G = nx.Graph()
+
+        for n in self.jsg["nodes"]:
+            G.add_node(n["id"], pos = n["coords"])
+
+        for e in self.jsg["edges"]: 
+            G.add_edge(e["from"], e["to"])
+        pos=nx.get_node_attributes(G,'pos')
+
+        nx.draw(G, with_labels=True, pos=pos)
+
+        pos2={ND['id']:(ND['coords'].x, ND['coords'].y) for ND in self.DG.jsdata['nodes']}
+
+        nx.draw(AG, with_labels=True, pos=pos2, node_color="green")
+
+        plt.show()
+        #############################################################
+
         SP = dict(nx.all_pairs_shortest_path(AG))
         M = [[0 for i in range(AG.number_of_nodes())] for j in range(AG.number_of_nodes())]
 
+        ag_nodes = list(AG.nodes)
         for i in range(AG.number_of_nodes()):
             for j in range(AG.number_of_nodes()):
-                if i in SP and j in SP[i]:
-                    M[i][j] = len(SP[i][j])
-                    if i == j:
-                        AG.add_node("X")
-                        oe = list(AG.out_edges(i))
-                        AG.add_edges_from([("X", oe[k][1]) for k in range(len(oe))])
-                        if nx.has_path(AG, "X", i):
-
-                            M[i][j] = len(nx.shortest_path(AG, "X", i)) -1
-                        else:
-                            M[i][j] = 0
-                        AG.remove_node("X")
+                if ag_nodes[j] in SP[ag_nodes[i]]:
+                    M[i][j] = len(SP[ag_nodes[i]][ag_nodes[j]])
+                if i == j:
+                    AG.add_node("X")
+                    oe = list(AG.out_edges(ag_nodes[i]))
+                    AG.add_edges_from([("X", oe[k][1]) for k in range(len(oe))])
+                    if nx.has_path(AG, "X", ag_nodes[i]):
+                        M[i][j] = len(nx.shortest_path(AG, "X", ag_nodes[i])) -1
+                    else:
+                        M[i][j] = 0
+                    AG.remove_node("X")
 
 
         # Check for (piros k) = 0
@@ -508,17 +539,17 @@ class SrlgDisjointSolver:
         k = self.k
 
         for i in range(len(M)):
-                if M[i][i] == k: 
-                    self.mincut_diff = 0
-                    logging.info("MIN-CUT = MAX-FLOW")
-                    return
+            if M[i][i] == k: 
+                self.mincut_diff = 0
+                logging.info("MIN-CUT = MAX-FLOW")
+                return
 
 
         # And now, we create a mapping from the dual graph's regions: for every (k) region, the (v)alue will be a set of other regions (only indexes)
         # that can be reached using only SRLG edges. (assuming all SRLG-s are dual connected - because I'm lazy with the code.)
 
         connections = dict()
-        for i in range(len(M)):
+        for i in AG.nodes:
             connections[i] = set()
         
         for key, val in self._srlg_map.items():
@@ -526,13 +557,14 @@ class SrlgDisjointSolver:
             v = []
             for edgeset in val:
                 for edge in edgeset: 
-                    v += [e for e in self.DG.em_pr_to_du[edge]]
-            allpoints = set(k.x, k.y)           
+                    v += [self.DG.em_pr_to_du[edge]]
+            allpoints = set((k.x, k.y))           
             allpoints.update([e.x for e in v])
             allpoints.update([e.y for e in v])
             AP = list(allpoints)
             for i in range(len(AP)):
-                connections[AP[i]].update(AP[:i] + AP[i+1:])
+                if AP[i] in connections:
+                    connections[AP[i]].update(AP[:i] + AP[i+1:])
 
         
         # Piros k = 1 hogy kell minden tartomany par amin at tudunk menni (egy darab) srlg eleken. hogya ez i,j akkor a MX i,j ben kell lennie k-nak es megvagyunk 
@@ -544,8 +576,10 @@ class SrlgDisjointSolver:
 
         for i in range(len(M)):
             for j in range(len(M)):
-                if M[i][j] == k: 
-                    if j in connections[i]:
+                if M[i][j] == self.k:
+                    ix = ag_nodes[i]                # Hack: we convert M-indexes to real node Ids using the ag_nodes list
+                    jx = ag_nodes[j] 
+                    if jx in connections[ix]:
                         self.mincut_diff = 1
                         logging.info("MIN-CUT = MAX-FLOW + 1")
                         return
@@ -561,8 +595,12 @@ class SrlgDisjointSolver:
             for j1 in range(len(M)):
                 for i2 in range(len(M)):
                     for j2 in range(len(M)):
-                        if M[i1][j1] + M[i2][j2] == k: 
-                            if j1 in connections[i1] and j2 in connections[i2]:
+                        if M[i1][j1] + M[i2][j2] == self.k:
+                            i1x = ag_nodes[i1]              # Hack: we convert M-indexes to real node Ids using the ag_nodes list
+                            j1x = ag_nodes[j1] 
+                            i2x = ag_nodes[i2]
+                            j2x = ag_nodes[j2] 
+                            if j1x in connections[i1x] and j2x in connections[i2x]:
                                 self.mincut_diff = 2
                                 logging.info("MIN-CUT = MAX-FLOW + 2")
                                 return

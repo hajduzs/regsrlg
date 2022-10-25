@@ -52,7 +52,7 @@
             "type": "python",
             "request": "launch",
             "program": "routeslrg.py",
-            "args": ["debug/zs/mincut.lgf", "debug/zs/srlg_mc1/mincut.lgf.srlg", "0", "1", "-d", "-u"],
+            "args": ["debug/mc1/mc1.lgf", "debug/mc1/srlg_mc1/mc1.lgf.srlg", "6", "7", "-d", "-u"],
             "console": "integratedTerminal"
         },
         {
