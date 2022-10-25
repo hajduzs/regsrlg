@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "routeslrg.py",
-            "args": ["debug/janos/janos.lgf", "debug/janos/srlg_byhand_1/janos.lgf.srlg", "0", "1", "-d"],
+            "args": ["graphs/debug/janos/janos.lgf", "graphs/debug/janos/srlg_byhand_1/janos.lgf.srlg", "0", "1", "-d"],
             "console": "integratedTerminal"
         },
         {
@@ -17,7 +17,7 @@
             "type": "python",
             "request": "launch",
             "program": "routeslrg.py",
-            "args": ["debug/janos/janos.lgf", "debug/janos/srlg_byhand_1/janos.lgf.srlg", "0", "1", "-d", "-u"],
+            "args": ["graphs/debug/janos/janos.lgf", "graphs/debug/janos/srlg_byhand_1/janos.lgf.srlg", "0", "1", "-d", "-u"],
             "console": "integratedTerminal"
         },
         {
@@ -25,7 +25,7 @@
             "type": "python",
             "request": "launch",
             "program": "routeslrg.py",
-            "args": ["debug/zs/mincut.lgf", "debug/zs/srlg_mc0/mincut.lgf.srlg", "0", "1", "-d", "-u"],
+            "args": ["graphs/debug/zs/mincut.lgf", "graphs/debug/zs/srlg_mc0/mincut.lgf.srlg", "0", "1", "-d", "-u"],
             "console": "integratedTerminal"
         },
         {
@@ -33,7 +33,7 @@
             "type": "python",
             "request": "launch",
             "program": "routeslrg.py",
-            "args": ["debug/zs/mincut.lgf", "debug/zs/srlg_mc0/mincut.lgf.srlg", "0", "1", "-d"],
+            "args": ["graphs/debug/zs/mincut.lgf", "graphs/debug/zs/srlg_mc0/mincut.lgf.srlg", "0", "1", "-d"],
             "console": "integratedTerminal"
         },
         {
@@ -52,7 +52,7 @@
             "type": "python",
             "request": "launch",
             "program": "routeslrg.py",
-            "args": ["debug/mc1/mc1.lgf", "debug/mc1/srlg_mc1/mc1.lgf.srlg", "6", "7", "-d", "-u"],
+            "args": ["graphs/debug/mc1/mc1.lgf", "graphs/debug/mc1/srlg_mc1/mc1.lgf.srlg", "6", "7", "-d", "-u"],
             "console": "integratedTerminal"
         },
         {
@@ -60,7 +60,7 @@
             "type": "python",
             "request": "launch",
             "program": "routeslrg.py",
-            "args": ["debug/mc2/mc2.lgf", "debug/mc2/srlg_mc2/mc2.lgf.srlg", "0", "11", "-d", "-u"],
+            "args": ["graphs/debug/mc2/mc2.lgf", "graphs/debug/mc2/srlg_mc2/mc2.lgf.srlg", "0", "11", "-d", "-u"],
             "console": "integratedTerminal"
         },
         {

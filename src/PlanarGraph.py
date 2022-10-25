@@ -243,7 +243,7 @@ class PlanarGraph:
         # Calling previously defined function.
         # call with pn = first node of the path, to ensure right cw precedence.
 
-        # We set starting conditions here. If the algorithm is called with oldestpath set to sometginh,
+        # We set starting conditions here. If the algorithm is called with oldestpath set to something,
         # we start the dfs from the oldest paths's first edge. 
         path = newestpath
         fe = self._edges_left_of_path(newestpath)
