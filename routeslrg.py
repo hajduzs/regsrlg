@@ -8,6 +8,7 @@ sys.setrecursionlimit(2000)
 
 from src.SrlgDisjointSolver import SrlgDisjointSolver
 from src.util.JsonGraphGenerator import JsonGraphGenerator
+from src.util.JsonSrlgReader import load_srlgs_fromfile
 
 #
 #   Arguments and parsing
@@ -46,7 +47,7 @@ else:
 
 # Read input files given in args ant convert them to JSON 
 json_graph = JsonGraphGenerator(args.input_graph[0].name).gen_json(auto_convert=False) # TODO this is a lil' bit hacky, fix
-json_list  = json.load(args.input_slrg_list[0])
+json_list  = load_srlgs_fromfile(args.input_slrg_list[0].name)
 if len(json_list) == 1:
     json_list = json_list[0]
 s = args.source[0]

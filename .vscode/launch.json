@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "debug_funky_srlg",
+            "type": "python",
+            "request": "launch",
+            "program": "routeslrg.py",
+            "args": ["./graphs/run/v4_1/22_optic_eu_scaled/22_optic_eu_scaled.lgf", "./graphs/run/v4_1/22_optic_eu_scaled/srlg_radius4_0/22_optic_eu_scaled_.gml_fineness15_segments_measure_4.lgf", "0", "1", "-d"],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "debug",
             "type": "python",
             "request": "launch",

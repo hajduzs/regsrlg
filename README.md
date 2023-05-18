@@ -1,6 +1,8 @@
 # dijsjoint-py
 
-Python implementation of the algorithms seen in the article titled *"The Regional SRLG-disjoint Flow Problem is in P: Polynomial Algorithm and Max-Min Theorem"*
+Python implementation of the algorithms seen in 
+- **INFOCOM**:  *"Polynomial-Time Algorithm for the Regional SRLG-disjoint Paths Problem"*#
+- **ToN**: *"A Whirling Dervish: Polynomial-Time Algorithm for the Regional SRLG-disjoint Paths Problem"*
 
 ## Usage
 
